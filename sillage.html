@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sillage">
+<meta name="theme-color" content="#0e0c09">
+<title>Sillage</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Cormorant+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #0e0c09; }
+  body {
+    background: #0e0c09;
+    color: #e8ddd0;
+    font-family: 'EB Garamond', Georgia, serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: #0e0c09; }
+  ::-webkit-scrollbar-thumb { background: #2e2a24; border-radius: 2px; }
+
+  .app { max-width: 680px; margin: 0 auto; padding: 40px 18px 80px; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 36px; }
+  .header-eyebrow { font-size: 10px; letter-spacing: 5px; color: #6b5f52; text-transform: uppercase; margin-bottom: 10px; }
+  .header-title { font-family: 'Cormorant SC', Georgia, serif; font-size: 30px; font-weight: 300; letter-spacing: 4px; color: #e8ddd0; }
+  .header-rule { width: 40px; height: 1px; background: #2e2a24; margin: 14px auto; }
+  .header-count { font-size: 13px; color: #6b5f52; }
+  .header-count .count-num { color: #c9a84c; }
+  .header-count .count-full { color: #c97a4c; }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 1px solid #2e2a24; margin-bottom: 30px; }
+  .tab-btn {
+    padding: 10px 16px; background: transparent; border: none;
+    border-bottom: 1px solid transparent; color: #6b5f52; cursor: pointer;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    font-family: 'EB Garamond', serif; margin-bottom: -1px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn.active { color: #c9a84c; border-bottom-color: #c9a84c; }
+
+  /* Season sections */
+  .season { margin-bottom: 30px; }
+  .season-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .season-icon { font-size: 15px; }
+  .season-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
+  .season-rule { flex: 1; height: 1px; background: #1e1b17; }
+  .season-count { font-size: 10px; color: #3a3530; }
+
+  .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .slot {
+    background: #12100d; border: 1px solid #1e1b17;
+    border-radius: 2px; padding: 12px; min-height: 88px;
+    position: relative; transition: background 0.15s;
+    display: flex; flex-direction: column;
+  }
+  .slot.filled { border-color: var(--season-color-40); }
+  .slot.empty { align-items: center; justify-content: center; cursor: pointer; }
+  .slot.empty:active { background: #16130f; }
+  .slot.empty-inner { opacity: 0.25; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .slot.empty-inner span { font-size: 9px; letter-spacing: 1px; color: #3a3530; }
+
+  .slot-content { display: flex; gap: 8px; flex: 1; }
+  .slot-info { flex: 1; min-width: 0; }
+  .slot-name { font-size: 13px; color: #e8ddd0; line-height: 1.3; margin-bottom: 2px; word-break: break-word; }
+  .slot-house { font-size: 11px; color: #6b5f52; }
+  .slot-notes { font-size: 11px; color: #4a4238; margin-top: 3px; font-style: italic; word-break: break-word; }
+  .slot-actions {
+    position: absolute; top: 6px; right: 6px;
+    display: none; gap: 3px;
+  }
+  .slot:hover .slot-actions { display: flex; }
+  .slot-btn {
+    background: #1e1b17; border: none; color: #6b5f52;
+    width: 22px; height: 22px; border-radius: 1px; cursor: pointer;
+    font-size: 12px; display: flex; align-items: center; justify-content: center;
+    transition: color 0.15s;
+  }
+  .slot-btn:hover { color: #c9a84c; }
+
+  /* List (zone / decided) */
+  .frag-list { display: flex; flex-direction: column; gap: 7px; }
+  .frag-item {
+    background: #12100d; border: 1px solid #1e1b17;
+    border-radius: 2px; padding: 14px; display: flex;
+    align-items: flex-start; gap: 12px; position: relative;
+    transition: background 0.15s;
+  }
+  .frag-item:hover { background: #16130f; }
+  .frag-item:hover .slot-actions { display: flex; }
+  .frag-item-info { flex: 1; }
+  .frag-item-name { font-size: 16px; color: #e8ddd0; margin-bottom: 3px; }
+  .frag-item-house { font-size: 12px; color: #6b5f52; }
+  .frag-item-notes { font-size: 12px; color: #4a4238; margin-top: 4px; font-style: italic; }
+
+  .empty-state { text-align: center; padding: 60px 0; color: #3a3530; font-size: 15px; font-style: italic; }
+
+  /* Add button */
+  .add-wrap { text-align: center; margin-top: 38px; }
+  .add-btn {
+    background: transparent; border: 1px solid #2e2a24; color: #6b5f52;
+    padding: 12px 44px; font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    font-family: 'EB Garamond', serif; border-radius: 1px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .add-btn:hover { border-color: #c9a84c; color: #c9a84c; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.78);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; z-index: 200; opacity: 0;
+    animation: fadeOverlay 0.2s ease forwards;
+  }
+  @keyframes fadeOverlay { to { opacity: 1; } }
+  .modal {
+    background: #16130f; border: 1px solid #2e2a24; border-radius: 2px;
+    padding: 28px; width: 100%; max-width: 400px;
+    transform: translateY(8px); opacity: 0;
+    animation: slideUp 0.22s ease forwards;
+    max-height: 90vh; overflow-y: auto;
+  }
+  @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
+  .modal-title { font-size: 10px; letter-spacing: 3px; color: #6b5f52; text-transform: uppercase; margin-bottom: 22px; }
+
+  .field { margin-bottom: 14px; }
+  .field-label { font-size: 9px; letter-spacing: 2px; color: #6b5f52; text-transform: uppercase; margin-bottom: 6px; display: block; }
+  .field-input {
+    width: 100%; background: #0e0c09; border: 1px solid #2e2a24;
+    border-radius: 1px; padding: 9px 11px; color: #e8ddd0;
+    font-size: 15px; font-family: 'EB Garamond', serif; outline: none;
+    transition: border-color 0.2s;
+  }
+  .field-input:focus { border-color: #3e3830; }
+  .field-input::placeholder { color: #3a3530; }
+
+  .seg-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .seg-btn {
+    flex: 1; min-width: 80px; padding: 8px 6px; font-size: 10px; letter-spacing: 1px;
+    border: 1px solid #2e2a24; background: transparent;
+    color: #6b5f52; border-radius: 1px; cursor: pointer;
+    font-family: 'EB Garamond', serif; text-transform: uppercase; transition: all 0.15s;
+    text-align: center;
+  }
+  .seg-btn.active-status-owned { border-color: #c9a84c; background: rgba(201,168,76,0.08); color: #c9a84c; }
+  .seg-btn.active-status-decided { border-color: #9ec99e; background: rgba(158,201,158,0.08); color: #9ec99e; }
+  .seg-btn.active-status-zone { border-color: #9eafc9; background: rgba(158,175,201,0.08); color: #9eafc9; }
+  .seg-btn.active-season-summer { border-color: #c9a84c; background: rgba(201,168,76,0.08); color: #c9a84c; }
+  .seg-btn.active-season-rainy { border-color: #7aabcc; background: rgba(122,171,204,0.08); color: #7aabcc; }
+  .seg-btn.active-season-winter { border-color: #aac4d4; background: rgba(170,196,212,0.08); color: #aac4d4; }
+  .seg-btn.active-season-spring { border-color: #b5a89e; background: rgba(181,168,158,0.08); color: #b5a89e; }
+
+  .season-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  .modal-actions { display: flex; gap: 8px; margin-top: 22px; }
+  .btn-cancel {
+    flex: 1; padding: 10px; background: transparent; border: 1px solid #2e2a24;
+    color: #6b5f52; border-radius: 1px; cursor: pointer;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    font-family: 'EB Garamond', serif;
+  }
+  .btn-save {
+    flex: 2; padding: 10px; background: rgba(201,168,76,0.08); border: 1px solid #c9a84c;
+    color: #c9a84c; border-radius: 1px; cursor: pointer;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    font-family: 'EB Garamond', serif; transition: opacity 0.2s;
+  }
+  .btn-save:disabled { opacity: 0.3; cursor: default; }
+
+  /* Bottle SVG inline */
+  .bottle-svg { flex-shrink: 0; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  .tab-content { animation: fadeIn 0.25s ease; }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+const SEASONS = [
+  { key: 'summer', label: 'Summer',       icon: '☀',  color: '#c9a84c', rgb: '201,168,76'  },
+  { key: 'rainy',  label: 'Rainy / Windy',icon: '⛈', color: '#7aabcc', rgb: '122,171,204' },
+  { key: 'winter', label: 'Winter',        icon: '❄',  color: '#aac4d4', rgb: '170,196,212' },
+  { key: 'spring', label: 'Spring',        icon: '✿',  color: '#b5a89e', rgb: '181,168,158' },
+];
+const STATUS = {
+  owned:   { label: 'In Collection', color: '#c9a84c' },
+  decided: { label: 'Decided',       color: '#9ec99e' },
+  zone:    { label: 'In Zone',       color: '#9eafc9' },
+};
+
+let state = {
+  frags: [],
+  tab: 'wardrobe',
+  modal: null, // { frag, editing, id }
+};
+
+function load() {
+  try { state.frags = JSON.parse(localStorage.getItem('sillage_frags') || '[]'); } catch {}
+}
+function save() {
+  localStorage.setItem('sillage_frags', JSON.stringify(state.frags));
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function bottleSVG(filled, color) {
+  const c = filled ? color : 'none';
+  const s = filled ? color : '#3a3530';
+  return `<svg class="bottle-svg" width="20" height="32" viewBox="0 0 22 34" fill="none">
+    <rect x="8" y="0" width="6" height="4" rx="1" fill="${c}" stroke="${s}" stroke-width="1.2"/>
+    <path d="M5 8 Q4 11 4 14 L4 28 Q4 31 11 31 Q18 31 18 28 L18 14 Q18 11 17 8 Z" fill="${filled ? color+'22' : 'none'}" stroke="${s}" stroke-width="1.2"/>
+    <path d="M6 8 L16 8" stroke="${s}" stroke-width="1.2"/>
+  </svg>`;
+}
+
+function renderWardrobe() {
+  const owned = state.frags.filter(f => f.status === 'owned');
+  return SEASONS.map(season => {
+    const sfrags = owned.filter(f => f.season === season.key);
+    const slots = Array.from({length: 3}, (_, i) => {
+      const f = sfrags[i];
+      if (f) {
+        return `<div class="slot filled" style="--season-color-40: ${season.color}66"
+            data-action="edit" data-id="${f.id}">
+          <div class="slot-content">
+            ${bottleSVG(true, season.color)}
+            <div class="slot-info">
+              <div class="slot-name">${esc(f.name)}</div>
+              <div class="slot-house">${esc(f.house)}</div>
+              ${f.notes ? `<div class="slot-notes">${esc(f.notes)}</div>` : ''}
+            </div>
+          </div>
+          <div class="slot-actions">
+            <button class="slot-btn" data-action="edit" data-id="${f.id}" title="Edit">✎</button>
+            <button class="slot-btn" data-action="delete" data-id="${f.id}" title="Remove">×</button>
+          </div>
+        </div>`;
+      } else {
+        const canAdd = owned.length < 12;
+        return `<div class="slot empty" ${canAdd ? `data-action="add-season" data-season="${season.key}"` : ''} title="${canAdd ? 'Add fragrance' : 'Wardrobe full'}">
+          <div class="slot empty-inner">
+            ${bottleSVG(false, season.color)}
+            <span>${canAdd ? 'add' : 'full'}</span>
+          </div>
+        </div>`;
+      }
+    }).join('');
+    return `<div class="season">
+      <div class="season-header">
+        <span class="season-icon">${season.icon}</span>
+        <span class="season-label" style="color:${season.color}">${season.label}</span>
+        <div class="season-rule"></div>
+        <span class="season-count">${sfrags.length}/3</span>
+      </div>
+      <div class="slots">${slots}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderList(statusKey) {
+  const list = state.frags.filter(f => f.status === statusKey);
+  const color = STATUS[statusKey].color;
+  if (!list.length) return `<div class="empty-state">Nothing here yet</div>`;
+  return `<div class="frag-list">${list.map(f => `
+    <div class="frag-item">
+      ${bottleSVG(true, color)}
+      <div class="frag-item-info">
+        <div class="frag-item-name">${esc(f.name)}</div>
+        <div class="frag-item-house">${esc(f.house)}</div>
+        ${f.notes ? `<div class="frag-item-notes">${esc(f.notes)}</div>` : ''}
+      </div>
+      <div class="slot-actions" style="top:8px;right:8px">
+        <button class="slot-btn" data-action="edit" data-id="${f.id}">✎</button>
+        <button class="slot-btn" data-action="delete" data-id="${f.id}">×</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function renderModal() {
+  if (!state.modal) return '';
+  const { frag, editing } = state.modal;
+  const isOwned = frag.status === 'owned';
+  return `<div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-title">${editing ? 'Edit Fragrance' : 'Add Fragrance'}</div>
+      <div class="field">
+        <label class="field-label">Fragrance Name</label>
+        <input class="field-input" id="inp-name" placeholder="e.g. Oud Mood" value="${esc(frag.name)}">
+      </div>
+      <div class="field">
+        <label class="field-label">House / Brand</label>
+        <input class="field-input" id="inp-house" placeholder="e.g. Lattafa" value="${esc(frag.house)}">
+      </div>
+      <div class="field">
+        <label class="field-label">Status</label>
+        <div class="seg-group">
+          ${Object.entries(STATUS).map(([k,v]) =>
+            `<button class="seg-btn${frag.status===k?' active-status-'+k:''}" data-action="set-status" data-val="${k}">${v.label}</button>`
+          ).join('')}
+        </div>
+      </div>
+      ${isOwned ? `<div class="field" id="season-field">
+        <label class="field-label">Season</label>
+        <div class="season-grid">
+          ${SEASONS.map(s =>
+            `<button class="seg-btn${frag.season===s.key?' active-season-'+s.key:''}" data-action="set-season" data-val="${s.key}">${s.icon} ${s.label}</button>`
+          ).join('')}
+        </div>
+      </div>` : ''}
+      <div class="field">
+        <label class="field-label">Notes</label>
+        <input class="field-input" id="inp-notes" placeholder="woody, citrus, evening wear..." value="${esc(frag.notes||'')}">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" data-action="close-modal">Cancel</button>
+        <button class="btn-save" id="btn-save" data-action="save-modal" ${!frag.name.trim() ? 'disabled' : ''}>Save</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  const owned = state.frags.filter(f => f.status === 'owned');
+  const zone = state.frags.filter(f => f.status === 'zone');
+  const decided = state.frags.filter(f => f.status === 'decided');
+  const count = owned.length;
+  const rem = 12 - count;
+
+  document.getElementById('app').innerHTML = `
+    <div class="header">
+      <div class="header-eyebrow">Collection Ledger</div>
+      <h1 class="header-title">Sillage</h1>
+      <div class="header-rule"></div>
+      <div class="header-count">
+        <span class="${count >= 12 ? 'count-full' : 'count-num'}">${count}</span>
+        <span style="color:#3a3530"> / 12</span>
+        ${rem > 0 ? `<span style="color:#3a3530"> — ${rem} slot${rem!==1?'s':''} open</span>` : `<span class="count-full"> — wardrobe full</span>`}
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn${state.tab==='wardrobe'?' active':''}" data-action="tab" data-val="wardrobe">Wardrobe</button>
+      <button class="tab-btn${state.tab==='zone'?' active':''}" data-action="tab" data-val="zone">In Zone (${zone.length})</button>
+      <button class="tab-btn${state.tab==='decided'?' active':''}" data-action="tab" data-val="decided">Decided (${decided.length})</button>
+    </div>
+
+    <div class="tab-content">
+      ${state.tab === 'wardrobe' ? renderWardrobe() : ''}
+      ${state.tab === 'zone' ? renderList('zone') : ''}
+      ${state.tab === 'decided' ? renderList('decided') : ''}
+    </div>
+
+    <div class="add-wrap">
+      <button class="add-btn" data-action="open-modal">+ Add Fragrance</button>
+    </div>
+
+    ${renderModal()}
+  `;
+
+  bindInputs();
+}
+
+function bindInputs() {
+  const nameInp = document.getElementById('inp-name');
+  const saveBtn = document.getElementById('btn-save');
+  if (nameInp && saveBtn) {
+    nameInp.addEventListener('input', () => {
+      saveBtn.disabled = !nameInp.value.trim();
+    });
+  }
+}
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const action = el.dataset.action;
+
+  if (action === 'tab') {
+    state.tab = el.dataset.val;
+    render();
+  }
+
+  else if (action === 'open-modal') {
+    state.modal = { frag: { name:'', house:'', season:'summer', status:'owned', notes:'' }, editing: false };
+    render();
+  }
+
+  else if (action === 'add-season') {
+    state.modal = { frag: { name:'', house:'', season: el.dataset.season, status:'owned', notes:'' }, editing: false };
+    render();
+  }
+
+  else if (action === 'edit') {
+    const f = state.frags.find(x => x.id === el.dataset.id);
+    if (f) { state.modal = { frag: {...f}, editing: true, id: f.id }; render(); }
+  }
+
+  else if (action === 'delete') {
+    state.frags = state.frags.filter(x => x.id !== el.dataset.id);
+    save(); render();
+  }
+
+  else if (action === 'close-modal') {
+    state.modal = null; render();
+  }
+
+  else if (action === 'set-status') {
+    state.modal.frag.status = el.dataset.val;
+    render();
+  }
+
+  else if (action === 'set-season') {
+    state.modal.frag.season = el.dataset.val;
+    render();
+  }
+
+  else if (action === 'save-modal') {
+    const name = document.getElementById('inp-name')?.value.trim();
+    const house = document.getElementById('inp-house')?.value.trim() || '';
+    const notes = document.getElementById('inp-notes')?.value.trim() || '';
+    if (!name) return;
+    const { editing, id } = state.modal;
+    const updated = { ...state.modal.frag, name, house, notes };
+    if (editing) {
+      state.frags = state.frags.map(f => f.id === id ? { ...updated, id } : f);
+    } else {
+      state.frags.push({ ...updated, id: uid() });
+    }
+    state.modal = null;
+    save(); render();
+  }
+
+  else if (action === 'tab' || el.closest('#modal-overlay') === null) {
+    // clicking outside modal
+  }
+});
+
+// Close modal on overlay click
+document.addEventListener('click', e => {
+  if (e.target.id === 'modal-overlay') { state.modal = null; render(); }
+});
+
+load();
+render();
+</script>
+</body>
+</html>
